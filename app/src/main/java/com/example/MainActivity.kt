@@ -1,0 +1,116 @@
+package com.example
+
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.LayoutDirection
+import com.example.data.preferences.AppLanguage
+import com.example.data.preferences.AppSettingsPreferences
+import com.example.data.preferences.DeveloperPreferences
+import com.example.ui.components.PrivacyPolicyDialog
+import com.example.ui.screens.DashboardScreen
+import com.example.ui.screens.PermissionScreen
+import com.example.ui.screens.SettingsScreen
+import com.example.ui.theme.NetPulseTheme
+import com.example.ui.viewmodel.NetworkUsageViewModel
+import com.example.ui.viewmodel.NetworkUsageViewModelFactory
+
+enum class Screen {
+    DASHBOARD,
+    SETTINGS
+}
+
+class MainActivity : ComponentActivity() {
+
+    private val viewModel: NetworkUsageViewModel by viewModels {
+        NetworkUsageViewModelFactory(applicationContext)
+    }
+
+    private lateinit var appSettingsPreferences: AppSettingsPreferences
+    private lateinit var developerPreferences: DeveloperPreferences
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        appSettingsPreferences = AppSettingsPreferences(applicationContext)
+        developerPreferences = DeveloperPreferences(applicationContext)
+
+        enableEdgeToEdge()
+        setContent {
+            val uiState by viewModel.uiState.collectAsState()
+            val layoutDirection = if (uiState.language == AppLanguage.AR) {
+                LayoutDirection.Rtl
+            } else {
+                LayoutDirection.Ltr
+            }
+
+            var currentScreen by remember { mutableStateOf(Screen.DASHBOARD) }
+            var showPrivacyPolicyFromPermission by remember { mutableStateOf(false) }
+
+            if (showPrivacyPolicyFromPermission) {
+                PrivacyPolicyDialog(
+                    onDismiss = { showPrivacyPolicyFromPermission = false },
+                    language = uiState.language
+                )
+            }
+
+            CompositionLocalProvider(LocalLayoutDirection provides layoutDirection) {
+                NetPulseTheme(themeMode = uiState.themeMode) {
+                    if (!uiState.isPermissionGranted) {
+                        PermissionScreen(
+                            onCheckPermission = { viewModel.checkPermissionAndLoad(force = true) },
+                            onOpenPrivacyPolicy = { showPrivacyPolicyFromPermission = true },
+                            language = uiState.language
+                        )
+                    } else {
+                        AnimatedContent(
+                            targetState = currentScreen,
+                            transitionSpec = { fadeIn() togetherWith fadeOut() },
+                            label = "ScreenTransition",
+                            modifier = Modifier.fillMaxSize()
+                        ) { screen ->
+                            when (screen) {
+                                Screen.DASHBOARD -> DashboardScreen(
+                                    viewModel = viewModel,
+                                    uiState = uiState,
+                                    onNavigateToSettings = { currentScreen = Screen.SETTINGS }
+                                )
+                                Screen.SETTINGS -> SettingsScreen(
+                                    appSettingsPreferences = appSettingsPreferences,
+                                    developerPreferences = developerPreferences,
+                                    themeMode = uiState.themeMode,
+                                    language = uiState.language,
+                                    dataUnit = uiState.dataUnit,
+                                    refreshMode = uiState.refreshMode,
+                                    isDevMode = uiState.isDeveloperModeEnabled,
+                                    onBack = { currentScreen = Screen.DASHBOARD },
+                                    onOpenPrivacyPolicy = { showPrivacyPolicyFromPermission = true }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        viewModel.onLifecycleResume()
+    }
+}

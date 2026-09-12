@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">NetPulse</string>
+    <string name="wifi">واي فاي</string>
+    <string name="mobile">بيانات الجوال</string>
+    <string name="total">الإجمالي</string>
+    <string name="download">تنزيل</string>
+    <string name="upload">رفع</string>
+</resources>
