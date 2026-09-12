@@ -34,8 +34,8 @@ import java.time.LocalDate
 class NetworkUsageViewModel(
     private val repository: NetworkStatsRepository,
     private val dateRangePreferences: DateRangePreferences,
-    private val appSettingsPreferences: AppSettingsPreferences,
-    private val developerPreferences: DeveloperPreferences,
+    val appSettingsPreferences: AppSettingsPreferences,
+    val developerPreferences: DeveloperPreferences,
     private val connectivityObserver: ConnectivityObserver
 ) : ViewModel() {
 

@@ -13,6 +13,16 @@ class DeveloperPreferences(context: Context) {
     private val _isDeveloperModeEnabled = MutableStateFlow(isDeveloperModeEnabled())
     val isDeveloperModeEnabled: StateFlow<Boolean> = _isDeveloperModeEnabled.asStateFlow()
 
+    private val preferenceChangeListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+        if (key == KEY_DEV_MODE) {
+            _isDeveloperModeEnabled.value = isDeveloperModeEnabled()
+        }
+    }
+
+    init {
+        prefs.registerOnSharedPreferenceChangeListener(preferenceChangeListener)
+    }
+
     fun isDeveloperModeEnabled(): Boolean {
         return prefs.getBoolean(KEY_DEV_MODE, false)
     }

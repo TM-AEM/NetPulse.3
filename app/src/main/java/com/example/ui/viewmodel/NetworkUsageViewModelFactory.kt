@@ -11,7 +11,9 @@ import com.example.data.source.NetworkStatsDataSourceImpl
 import com.example.util.ConnectivityObserver
 
 class NetworkUsageViewModelFactory(
-    private val context: Context
+    private val context: Context,
+    private val appSettingsPreferences: AppSettingsPreferences? = null,
+    private val developerPreferences: DeveloperPreferences? = null
 ) : ViewModelProvider.Factory {
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
@@ -19,8 +21,8 @@ class NetworkUsageViewModelFactory(
             val dataSource = NetworkStatsDataSourceImpl(context.applicationContext)
             val repository = NetworkStatsRepositoryImpl(dataSource)
             val dateRangePrefs = DateRangePreferences(context.applicationContext)
-            val appSettingsPrefs = AppSettingsPreferences(context.applicationContext)
-            val devPrefs = DeveloperPreferences(context.applicationContext)
+            val appSettingsPrefs = appSettingsPreferences ?: AppSettingsPreferences(context.applicationContext)
+            val devPrefs = developerPreferences ?: DeveloperPreferences(context.applicationContext)
             val connectivity = ConnectivityObserver(context.applicationContext)
 
             return NetworkUsageViewModel(

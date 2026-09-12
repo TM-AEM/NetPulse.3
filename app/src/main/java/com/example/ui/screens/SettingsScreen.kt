@@ -329,7 +329,9 @@ private fun <T> OptionSelectionDialog(
             shape = RoundedCornerShape(DesignTokens.DialogCornerRadius),
             color = MaterialTheme.colorScheme.surface,
             tonalElevation = 6.dp,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .testTag("option_selection_dialog")
         ) {
             Column(modifier = Modifier.padding(DesignTokens.SpacingLarge)) {
                 Text(
@@ -339,11 +341,13 @@ private fun <T> OptionSelectionDialog(
                 )
                 Spacer(modifier = Modifier.height(DesignTokens.SpacingMedium))
                 options.forEach { option ->
+                    val optionName = (option as? Enum<*>)?.name ?: optionLabel(option)
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clickable { onSelect(option) }
-                            .padding(vertical = 8.dp),
+                            .padding(vertical = 8.dp)
+                            .testTag("option_item_$optionName"),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         RadioButton(

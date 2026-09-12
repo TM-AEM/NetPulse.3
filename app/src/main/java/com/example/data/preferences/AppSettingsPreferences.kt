@@ -44,6 +44,19 @@ class AppSettingsPreferences(context: Context) {
     private val _refreshMode = MutableStateFlow(loadRefreshMode())
     val refreshMode: StateFlow<AppRefreshMode> = _refreshMode.asStateFlow()
 
+    private val preferenceChangeListener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+        when (key) {
+            KEY_THEME -> _themeMode.value = loadThemeMode()
+            KEY_LANGUAGE -> _language.value = loadLanguage()
+            KEY_DATA_UNIT -> _dataUnit.value = loadDataUnit()
+            KEY_REFRESH_MODE -> _refreshMode.value = loadRefreshMode()
+        }
+    }
+
+    init {
+        prefs.registerOnSharedPreferenceChangeListener(preferenceChangeListener)
+    }
+
     private fun loadThemeMode(): AppThemeMode {
         val name = prefs.getString(KEY_THEME, AppThemeMode.SYSTEM.name) ?: AppThemeMode.SYSTEM.name
         return try { AppThemeMode.valueOf(name) } catch (e: Exception) { AppThemeMode.SYSTEM }

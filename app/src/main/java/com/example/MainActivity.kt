@@ -47,8 +47,8 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        appSettingsPreferences = AppSettingsPreferences(applicationContext)
-        developerPreferences = DeveloperPreferences(applicationContext)
+        appSettingsPreferences = viewModel.appSettingsPreferences
+        developerPreferences = viewModel.developerPreferences
 
         enableEdgeToEdge()
         setContent {
